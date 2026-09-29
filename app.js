@@ -117,13 +117,13 @@ const RULES_OUT = [
   ['Schulden & Kredite','Kreditkarten & Raten',/SWISSCARD|PAYRED|POWERPAY|PAYCARD|KLARNA|CEMBRA|BANK-NOW|BYJUNO|ACCARDA/],
   ['Schulden & Kredite','Zinsen & Bankgebühren',/ZINSABSCHLUSS|ZINSBELASTUNG|ABSCHLUSSBUCHUNG|SOLLZINS|DIENSTLEISTUNGSPREIS|GEBÜHRENABRECHNUNG|PREIS CS/],
   ['Tabak','Tabak & Kiosk',/TABAC|TABAK|K KIOSK|KKIOSK|K-KIOSK|\bAVEC\b|PRESS & BOOKS|VALORA|SMOKE|ZIGAR|TAB 20/],
-  ['Mobilität','Treibstoff & Auto',/MIGROL|SHELL|AVIA|BP TANK|\bBP\b|\bENI\b|AGROLA|TAMOIL|ESSO|SOCAR|COOP PRONTO|CAR ?WASH|PNEU|BESTDRIVE|GARAGE|\bTCS\b|PARKING|PARKHAUS|PARKDEPOT|PARKPLATZ|VIGNETTE|\bSBB\b|\bZVB\b|TAXI|UBER|MOBILITY|FLIXBUS|TRENITALIA|AUTOGRILL|ASPIT|MISER|STAZI|DISTR/],
+  ['Mobilität','Treibstoff & Auto',/MIGROL|SHELL|AVIA|BP TANK|\bBP\b|\bENI\b|AGROLA|TAMOIL|ESSO|SOCAR|COOP PRONTO|CAR ?WASH|PNEU|BESTDRIVE|GARAGE|\bTCS\b|PARKING|PARKHAUS|PARKDEPOT|PARKPLATZ|VIGNETTE|\bSBB\b|\bZVB\b|TAXI|UBER|MOBILITY|FLIXBUS|TRENITALIA|AUTOGRILL|ASPIT|MISER|STAZI|DISTR|DOLEMA|AUTOBAHN|ARAL|TELEPASS|DIREZ|ADS /],
   ['Lebensmittel','Supermarkt',/ALDI|LIDL|COOP|DENNER|MIGROS M(?!R)|MIGROS-|MIGROLINO|VOLG|\bSPAR\b|OTTO'?S|CONAD|CARREFOUR|EUROSPIN|AUCHAN|SUPERMERCATO|MMM|OUTLET MIGROS|METZG|FARMY/],
   ['Bäckerei & Snacks','Bäckerei & Café',/BÄCKEREI|BACKEREI|BAECKEREI|CONFISEU|STARBUCKS|\bCAFE|CAFFE|KONDITOREI|SELECTA/],
   ['Restaurant & Take-away','Restaurant & Take-away',/RESTAURANT|RISTORANTE|PIZZ|MCDONALD|BURGER|KEBAB|SUSHI|TIMEOUT|TAKE|ASIAN|RICCARDO|RIBALDI|OSTERIA|TRATTORIA|\bBAR\b|GELAT|GROTTO|WARTSTEIN|\bKFC\b|SUBWAY|DÖNER|DONER|THAI|IMBISS|BISTRO|GASTHAUS|GASTHOF|WIRTSCHAFT|\bREST\b|GASTRO|LOUNGE|TAVERNA|PALLADINO/],
   ['Freizeit & Sport','Golf',/GOLF/],
   ['Freizeit & Sport','Sport & Freizeit',/FITNESS|PLAYTOMIC|DECATHLON|SPORTX|SPORT|SWISSLOS|KINO|PATHE|BADI|STRANDBAD|HALLENBAD|ZOO|YOGA|WHOOP|PADEL|TENNIS|BERGBAHN|SEILBAHN|TICKETCORNER|EVENTFROG|CASIN/],
-  ['Kurse & Coaching','Online-Kurse & Coaching',/HUMAN ?DESIGN|DIGISTORE|IHR EINKAU|COACH|SEMINAR|ACADEMY|MASTERCLASS|COPECART|ABLEFY|ELOPAGE|UDEMY/],
+  ['Kurse & Coaching','Online-Kurse & Coaching',/BEGELSPACHER|BEGELSBACHER|HUMAN ?DESIGN|DIGISTORE|IHR EINKAU|BRAINWAVE|GESTALTVISION|COPECART|ABLEFY|ELOPAGE/],
   ['Abos & Digital','Handy, Internet & Abos',/SUNRISE|YALLO|\bSALT\b|SWISSCOM|GALAXUS MOBILE|GALAXUS ABOS|DIGITEC CONNECT|HOSTPOINT|ANTHROPIC|CLAUDE|OPENAI|APPLE\.COM|ITUNES|GOOGLE|SPOTIFY|NETFLIX|DISNEY|YOUTUBE|MICROSOFT|ADOBE|DAZN|AUDIBLE|UNITY/],
   ['Shopping','Online & Einkauf',/GALAXUS|DIGITEC|AMAZON|AMZN|TEMU|ZALANDO|EX LIBRIS|IKEA|HORNBACH|JUMBO|BAUHAUS|MEDIA ?MARKT|INTERDISCOUNT|MANOR|H&M|ZARA|C&A|DOSENBACH|OFFICE WORLD|BRACK|MOMOX|SHEIN|ALIEXPRESS|TCHIBO|PRIMARK|NIKE|ADIDAS|THALIA|ORELL|LANDI|QUALIPET|FRESSNAPF|PFISTER|CONFORAMA|MICASA|JYSK|COTTON|SUMUP|PAYPAL/],
   ['Bargeld','Bargeldbezug',/BARGELD|BANCOMAT|BEZUG|GELDAUTOMAT|ATM/]
@@ -175,7 +175,7 @@ const DEFAULT_SETTINGS = () => ({
 });
 const DEFAULT_DEBTS = () => ([
   {id:'kk', name:'Kreditkarte UBS', saldo:5700, rate:300, zins:12},
-  {id:'pr', name:'PayRed (Media Markt)', saldo:1850, rate:200, zins:null}
+  {id:'pr', name:'PayRed (Media Markt)', saldo:3389.72, rate:200, zins:11.2}
 ]);
 const S = { tx: [], settings: null, rules: [], debts: [], topf: [], view: 'home', pin: null, ana: {per:'12m'}, list: {q:'', c:'', n:150} };
 
@@ -479,10 +479,12 @@ function unlock(pin) { S.pin = pin; pinBuf = ''; showApp(true); render(); }
 function lockNow() { S.pin = null; pinBuf = ''; $('#sheet-root').innerHTML = ''; renderLock(); }
 
 /* ===================== Grafik-Bausteine ===================== */
-function ring(frac, over) {
-  const C = 2 * Math.PI * 44, f = Math.max(0, Math.min(1, frac));
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="9"/>
-    <circle cx="50" cy="50" r="44" fill="none" stroke="${over ? '#ffb199' : '#fff'}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${over ? C : C * f} ${C}"/></svg>`;
+function ringSVG(frac, over) {
+  const C = 2 * Math.PI * 46, f = Math.max(0, Math.min(1, frac));
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${over ? '#ff6f5b' : '#9a82ff'}"/><stop offset="1" stop-color="${over ? '#f2934f' : '#f7b58c'}"/></linearGradient></defs>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="url(#rg)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${over ? C : C * f} ${C}"/></svg>`;
 }
 const barHTML = (used, budget) => {
   const f = budget > 0 ? used / budget : (used > 0 ? 2 : 0);
@@ -498,56 +500,75 @@ function renderHome() {
   }
   const pot = potState(), w = pot.weeks[pot.weeks.length - 1] || { budget: weekTotal(), spent: 0, carryIn: 0, sp: {}, von: iso(monday(today())) };
   const base = weekTotal(), rest = w.budget - w.spent, over = rest < 0;
-  const wd = (today().getDay() + 6) % 7, daysLeft = 7 - wd;
-  const scale = base > 0 ? w.budget / base : 1;
+  const wd = (today().getDay() + 6) % 7, daysLeft = 7 - wd, scale = base > 0 ? w.budget / base : 1;
   const tab = tabakMonth(), tabRest = st.tabak - tab;
   const debtSum = S.debts.reduce((s, d) => s + (+d.saldo || 0), 0), plan = debtPlan();
-  const fx = nextFix(5);
+  const fx = nextFix(4);
+  const t = today();
+  let payday = new Date(t.getFullYear(), t.getMonth(), st.lohntag); if (payday < t) payday = new Date(t.getFullYear(), t.getMonth() + 1, st.lohntag);
+  const toPay = Math.round((payday - t) / 864e5);
+  const bdays = st.lastBackup ? dayDiff(iso(t), st.lastBackup) : 999;
   const banners = [];
-  const bdays = st.lastBackup ? dayDiff(iso(today()), st.lastBackup) : 999;
-  if (today().getDay() === 0) banners.push(`<div class="banner"><div class="t"><b>Sonntag: Wochenabschluss.</b> <span class="muted">Lade die CSVs aus dem E-Banking und von der Kreditkarte, damit die Woche vollständig ist.</span></div><button class="btn small orange" data-view="import">Importieren</button></div>`);
+  if (t.getDay() === 0) banners.push(`<div class="banner"><div class="t"><b>Sonntag: Wochenabschluss.</b> <span class="muted">Lade die CSVs aus dem E-Banking und von der Kreditkarte, damit die Woche vollständig ist.</span></div><button class="btn small orange" data-view="import">Importieren</button></div>`);
   if (bdays > 30) banners.push(`<div class="banner"><div class="t"><b>Sicherung fällig.</b> <span class="muted">${st.lastBackup ? `Letzte Sicherung vor ${bdays} Tagen.` : 'Es gibt noch keine Sicherung.'}</span></div><button class="btn small orange" data-action="backup">Jetzt sichern</button></div>`);
-  const lastDate = S.tx.filter(t => !t.m).reduce((mx, t) => t.d > mx ? t.d : mx, '');
-  const wLabel = `${fmtD(w.von).slice(0,5)}. bis ${fmtD(iso(addDays(parseISO(w.von), 6))).slice(0,5)}.`;
+  const lastDate = S.tx.filter(x => !x.m).reduce((mx, x) => x.d > mx ? x.d : mx, '');
+  const wLabel = `${fmtD(w.von).slice(0, 5)}. bis ${fmtD(iso(addDays(parseISO(w.von), 6))).slice(0, 5)}.`;
   m.innerHTML = `${banners.join('')}
   <section class="bento">
-    <div class="tile a-debt">
-      <div class="label">Schulden</div>
-      <div class="big warm" style="margin-top:12px">${chf(debtSum)}<small>CHF</small></div>
-      <div class="note">${debtSum > 0 ? `Schuldenfrei ca. ${MONL[plan.date.getMonth()]} ${plan.date.getFullYear()}` : 'Schuldenfrei'}</div>
+    <div class="col">
+      <div class="tile">
+        <div class="label">Wochenposten</div>
+        <div class="posts">${st.posts.map(p => { const b = p.betrag * scale, u = w.sp[p.id] || 0; return `<div class="post"><div class="row"><span>${esc(p.name)}</span><b>${chf(u)} / ${chf(b)}</b></div>${barHTML(u, b)}</div>`; }).join('')}</div>
+      </div>
+      <div class="tile">
+        <div class="big warm">${chf(debtSum)}<small>CHF</small></div>
+        <div class="label" style="margin-top:6px">offene Schulden</div>
+        <div class="note">${debtSum > 0 ? `Schuldenfrei ca. ${MONL[plan.date.getMonth()]} ${plan.date.getFullYear()}` : 'Alles abbezahlt'}</div>
+      </div>
+      <div class="tile" style="padding:18px"><button class="addbtn" data-action="add"><span class="plus" aria-hidden="true">+</span>Ausgabe erfassen</button></div>
     </div>
-    <div class="tile hero a-hero">
-      <div class="label">Diese Woche noch verfügbar</div>
-      <div class="ringwrap">${ring(w.budget > 0 ? rest / w.budget : 0, over)}
-        <div class="ringcenter"><div class="big num">${chf(Math.abs(rest))}</div><div class="sub">${over ? 'CHF überzogen' : `von ${chf(w.budget)} CHF`}</div></div></div>
-      <div class="hero-foot">
-        <span class="pill">${daysLeft === 1 ? 'Letzter Tag' : `noch ${daysLeft} Tage`}</span>
-        <span class="pill">${wLabel}</span>
-        ${w.carryIn > 0 ? `<span class="pill warn">−${chf(w.carryIn)} aus der Vorwoche</span>` : ''}
+
+    <div class="center">
+      <div class="tile hero">
+        <div class="eyebrow"><span class="sp" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="#3a1d05"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg></span>Woche ${wLabel}</div>
+        <h1>Diese Woche noch verfügbar</h1>
+        <div class="hero-foot">
+          <span class="pill">${daysLeft === 1 ? 'Letzter Tag' : `noch ${daysLeft} Tage`}</span>
+          <span class="pill">Ø ${chf(Math.max(0, rest) / daysLeft)} CHF pro Tag</span>
+          ${w.carryIn > 0 ? `<span class="pill warn">−${chf(w.carryIn)} aus der Vorwoche</span>` : ''}
+        </div>
+      </div>
+      <div class="lower">
+        <div class="orb">${ringSVG(w.budget > 0 ? rest / w.budget : 0, over)}
+          <div class="inner"><div class="big num">${chf(Math.abs(rest))}</div><div class="sub">${over ? 'CHF überzogen' : `von ${chf(w.budget)} CHF`}</div></div></div>
+        <div class="tile">
+          <div class="icon o" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a1608" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="13" width="15" height="6" rx="2"/><path d="M20 13v6M16 5c0 2 2 2 2 4"/></svg></div>
+          <h3>Tabak im ${MONL[t.getMonth()]}</h3>
+          <div class="big ${tabRest < 0 ? 'warm' : ''}" style="margin-top:10px">${chf(Math.abs(tabRest))}<small>CHF</small></div>
+          ${barHTML(tab, st.tabak)}
+          <div class="note">${tabRest < 0 ? 'über dem Topf' : 'übrig'}, ${chf(tab)} von ${chf(st.tabak)} CHF gebraucht</div>
+        </div>
+        <div class="tile">
+          <div class="icon v" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg></div>
+          <h3>Schuldenfrei-Topf</h3>
+          <div class="big cool" style="margin-top:10px">${chf(pot.balance)}<small>CHF</small></div>
+          <div class="note">${pot.balance > 0 ? 'Übrig aus abgeschlossenen Wochen.' : 'Was in einer Woche übrig bleibt, landet hier.'}</div>
+          ${pot.balance >= 1 ? `<button class="btn small primary" style="margin-top:12px" data-action="pot-pay">Als Extrazahlung erfassen</button>` : ''}
+        </div>
       </div>
     </div>
-    <div class="tile a-pot">
-      <div class="orbdot" aria-hidden="true"></div>
-      <div class="label">Schuldenfrei-Topf</div>
-      <div class="big cool" style="margin-top:12px">${chf(pot.balance)}<small>CHF</small></div>
-      <div class="note">${pot.balance > 0 ? 'Übrig aus abgeschlossenen Wochen.' : 'Was in einer Woche übrig bleibt, landet hier.'}</div>
-      ${pot.balance >= 1 ? `<button class="btn small primary" style="margin-top:12px" data-action="pot-pay">Als Extrazahlung erfassen</button>` : ''}
-    </div>
-    <div class="tile a-tabak">
-      <div class="label">Tabak im ${MONL[today().getMonth()]}</div>
-      <div class="big ${tabRest < 0 ? 'warm' : ''}" style="margin-top:12px">${chf(Math.abs(tabRest))}<small>CHF</small></div>
-      ${barHTML(tab, st.tabak)}
-      <div class="note">${tabRest < 0 ? 'über dem Topf' : 'übrig'}, ${chf(tab)} von ${chf(st.tabak)} CHF gebraucht</div>
-    </div>
-    <div class="tile a-fix">
-      <div class="label">Nächste Fixkosten</div>
-      <div class="fixlist">${fx.map(f => `<div class="fixitem"><div class="day">${f.date.getDate()}<small>${MON[f.date.getMonth()]}</small></div><div class="n"><div>${esc(f.name)}</div></div><b>${chf(f.betrag)}</b></div>`).join('') || '<p class="muted">Keine Fixkosten mit Datum erfasst.</p>'}</div>
-      <div class="note" style="margin-top:14px">Lohn erwartet am ${st.lohntag}. Daten bis ${lastDate ? fmtD(lastDate) : '–'}.</div>
-    </div>
-    <div class="tile a-add"><button class="addbtn" data-action="add"><span class="plus" aria-hidden="true">+</span>Ausgabe erfassen</button></div>
-    <div class="tile a-posts">
-      <div class="label">Wochenposten</div>
-      <div class="posts">${st.posts.map(p => { const b = p.betrag * scale, u = w.sp[p.id] || 0; return `<div class="post"><div class="row"><span>${esc(p.name)}</span><b>${chf(u)} / ${chf(b)}</b></div>${barHTML(u, b)}</div>`; }).join('')}</div>
+
+    <div class="col">
+      <div class="tile status"><span class="dot" aria-hidden="true"></span><div><b>${toPay === 0 ? 'Lohn kommt heute' : `Lohn in ${toPay} Tag${toPay === 1 ? '' : 'en'}`}</b><div class="note" style="margin:0">Daten bis ${lastDate ? fmtD(lastDate) : '–'}</div></div></div>
+      <div class="tile">
+        <div class="big cool">${debtSum > 0 ? `${MON[plan.date.getMonth()]} ${plan.date.getFullYear()}` : 'Jetzt'}</div>
+        <div class="bracket">schuldenfrei</div>
+        <div class="note">Mit den heutigen Raten, ${chf(plan.interest)} CHF Zins bis dahin.</div>
+      </div>
+      <div class="tile">
+        <div class="label">Nächste Fixkosten</div>
+        <div class="fixlist">${fx.map(f => `<div class="fixitem"><div class="day">${f.date.getDate()}<small>${MON[f.date.getMonth()]}</small></div><div class="n"><div>${esc(f.name)}</div></div><b>${chf(f.betrag)}</b></div>`).join('') || '<p class="muted">Keine Fixkosten mit Datum erfasst.</p>'}</div>
+      </div>
     </div>
   </section>`;
 }
